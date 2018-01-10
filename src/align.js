@@ -12,6 +12,8 @@ export function right(node, n) {
   return n - 1 - node.height;
 }
 
+// n is the number of columns
+// If there are source links, return the column index of the node. Otherwise default to the last column index
 export function justify(node, n) {
   return node.sourceLinks.length ? node.depth : n - 1;
 }

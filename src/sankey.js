@@ -49,77 +49,105 @@ function find(nodeById, id) {
   return node;
 }
 
-export default function() {
+export default function () {
   var x0 = 0, y0 = 0, x1 = 1, y1 = 1, // extent
-      dx = 24, // nodeWidth
-      py = 8, // nodePadding
-      id = defaultId,
-      align = justify,
-      nodes = defaultNodes,
-      links = defaultLinks,
-      iterations = 32;
+    dx = 24, // nodeWidth
+    py = 8, // nodePadding
+    id = defaultId,
+    align = justify,
+    nodes = defaultNodes,
+    links = defaultLinks,
+    iterations = 32,
+    geospatialPositioner = null,
+    // A function that expects options, minValue, maxValue of all nodes and a
+    // node and returns a normalized height, y1, for geospatial mode
+    heightNormalizer = null,
+    // A function that expects a node an returns a normalized width, x1, for geospatial mode
+    widthNormalizer = null;
 
   function sankey() {
     var graph = {nodes: nodes.apply(null, arguments), links: links.apply(null, arguments)};
-    computeNodeLinks(graph);
-    computeNodeValues(graph);
-    computeNodeDepths(graph);
-    computeNodeBreadths(graph, iterations);
-    computeLinkBreadths(graph);
+    if (geospatialPositioner) {
+      computeNodeLinks(graph);
+      computeNodeValues(graph);
+      computeGeospatialNodeDepths(graph);
+      // This is normally done by computeNodeBreadths, which we don't use
+      computeLinkWidths(graph);
+      computeLinkBreadths(graph);
+    }
+    else {
+      computeNodeLinks(graph);
+      computeNodeValues(graph);
+      computeNodeDepths(graph);
+      computeNodeBreadths(graph, iterations);
+      computeLinkBreadths(graph);
+    }
     return graph;
   }
 
-  sankey.update = function(graph) {
+  sankey.update = function (graph) {
     computeLinkBreadths(graph);
     return graph;
   };
 
-  sankey.nodeId = function(_) {
+  sankey.nodeId = function (_) {
     return arguments.length ? (id = typeof _ === "function" ? _ : constant(_), sankey) : id;
   };
 
-  sankey.nodeAlign = function(_) {
+  sankey.nodeAlign = function (_) {
     return arguments.length ? (align = typeof _ === "function" ? _ : constant(_), sankey) : align;
   };
 
-  sankey.nodeWidth = function(_) {
+  sankey.nodeWidth = function (_) {
     return arguments.length ? (dx = +_, sankey) : dx;
   };
 
-  sankey.nodePadding = function(_) {
+  sankey.nodePadding = function (_) {
     return arguments.length ? (py = +_, sankey) : py;
   };
 
-  sankey.nodes = function(_) {
+  sankey.nodes = function (_) {
     return arguments.length ? (nodes = typeof _ === "function" ? _ : constant(_), sankey) : nodes;
   };
 
-  sankey.links = function(_) {
+  sankey.links = function (_) {
     return arguments.length ? (links = typeof _ === "function" ? _ : constant(_), sankey) : links;
   };
 
-  sankey.size = function(_) {
+  sankey.size = function (_) {
     return arguments.length ? (x0 = y0 = 0, x1 = +_[0], y1 = +_[1], sankey) : [x1 - x0, y1 - y0];
   };
 
-  sankey.extent = function(_) {
+  sankey.extent = function (_) {
     return arguments.length ? (x0 = +_[0][0], x1 = +_[1][0], y0 = +_[0][1], y1 = +_[1][1], sankey) : [[x0, y0], [x1, y1]];
   };
 
-  sankey.iterations = function(_) {
+  sankey.iterations = function (_) {
     return arguments.length ? (iterations = +_, sankey) : iterations;
+  };
+
+  sankey.geospatialPositioner = function (_) {
+    return arguments.length ? (geospatialPositioner = _, sankey) : geospatialPositioner;
+  };
+
+  sankey.heightNormalizer = function (_) {
+    return arguments.length ? (heightNormalizer = _, sankey) : heightNormalizer;
+  };
+
+  sankey.widthtNormalizer = function (_) {
+    return arguments.length ? (widthNormalizer = _, sankey) : widthNormalizer;
   };
 
   // Populate the sourceLinks and targetLinks for each node.
   // Also, if the source and target are not objects, assume they are indices.
   function computeNodeLinks(graph) {
-    graph.nodes.forEach(function(node, i) {
+    graph.nodes.forEach(function (node, i) {
       node.index = i;
       node.sourceLinks = [];
       node.targetLinks = [];
     });
     var nodeById = map(graph.nodes, id);
-    graph.links.forEach(function(link, i) {
+    graph.links.forEach(function (link, i) {
       link.index = i;
       var source = link.source, target = link.target;
       if (typeof source !== "object") source = link.source = find(nodeById, source);
@@ -131,7 +159,7 @@ export default function() {
 
   // Compute the value (size) of each node by summing the associated links.
   function computeNodeValues(graph) {
-    graph.nodes.forEach(function(node) {
+    graph.nodes.forEach(function (node) {
       node.value = Math.max(
         sum(node.sourceLinks, value),
         sum(node.targetLinks, value)
@@ -147,9 +175,12 @@ export default function() {
     var nodes, next, x;
 
     for (nodes = graph.nodes, next = [], x = 0; nodes.length; ++x, nodes = next, next = []) {
-      nodes.forEach(function(node) {
+      nodes.forEach(function (node) {
+        // depth is the column position from left to right
+        // A node that is only a target has maximum depth
+        // A node that is only a source has 0 depth
         node.depth = x;
-        node.sourceLinks.forEach(function(link) {
+        node.sourceLinks.forEach(function (link) {
           if (next.indexOf(link.target) < 0) {
             next.push(link.target);
           }
@@ -158,9 +189,12 @@ export default function() {
     }
 
     for (nodes = graph.nodes, next = [], x = 0; nodes.length; ++x, nodes = next, next = []) {
-      nodes.forEach(function(node) {
+      nodes.forEach(function (node) {
+        // height is the column position from right to left
+        // A node that is only a source has maximum height
+        // A node that is only a target has 0 height
         node.height = x;
-        node.targetLinks.forEach(function(link) {
+        node.targetLinks.forEach(function (link) {
           if (next.indexOf(link.source) < 0) {
             next.push(link.source);
           }
@@ -168,20 +202,48 @@ export default function() {
       });
     }
 
+    // kx is the column width of the view minus the padding between nodes divided by the number of columns
+    // If there are only two columns kx is the whole view width
+    // If there are three columns key is half the view width, etc
     var kx = (x1 - x0 - dx) / (x - 1);
-    graph.nodes.forEach(function(node) {
+    graph.nodes.forEach(function (node) {
+      // The x0 position is between 0 and the max column index times the kx width
+      // The x0 plus the node padding
       node.x1 = (node.x0 = x0 + Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x)))) * kx) + dx;
     });
   }
 
-  function computeNodeBreadths(graph) {
-    var columns = nest()
-        .key(function(d) { return d.x0; })
-        .sortKeys(ascending)
-        .entries(graph.nodes)
-        .map(function(d) { return d.values; });
+  /**
+   * Disregards standard positioning and uses geospatial positioning
+   * @param graph
+   */
+  function computeGeospatialNodeDepths(graph) {
+    var nodeValues = graph.nodes.map(function(node) { return node.value}),
+      minValue = Math.min.apply(undefined, nodeValues),
+      maxValue = Math.max.apply(undefined, nodeValues);
+    graph.nodes.forEach(function (node) {
+      Object.assign(node, {depth: 0, height: 0, x0: 0, y0: 0,
+        x1: widthNormalizer ? widthNormalizer(node) : dx,
+        y1: heightNormalizer ? heightNormalizer({minValue: minValue, maxValue: maxValue}, node) : 1});
+      Object.assign(node, geospatialPositioner(node));
+    });
+  }
 
-    //
+  function computeColumns(graph) {
+    return nest()
+      .key(function (d) {
+        return d.x0;
+      })
+      .sortKeys(ascending)
+      .entries(graph.nodes)
+      .map(function (d) {
+        return d.values;
+      });
+  }
+
+  function computeNodeBreadths(graph) {
+    var columns = computeColumns(graph)
+
     initializeNodeBreadth();
     resolveCollisions();
     for (var alpha = 1, n = iterations; n > 0; --n) {
@@ -192,24 +254,21 @@ export default function() {
     }
 
     function initializeNodeBreadth() {
-      var ky = min(columns, function(nodes) {
-        return (y1 - y0 - (nodes.length - 1) * py) / sum(nodes, value);
-      });
+      var ky = computeKy(graph, columns)
 
-      columns.forEach(function(nodes) {
-        nodes.forEach(function(node, i) {
+      columns.forEach(function (nodes) {
+        nodes.forEach(function (node, i) {
           node.y1 = (node.y0 = i) + node.value * ky;
         });
       });
 
-      graph.links.forEach(function(link) {
-        link.width = link.value * ky;
-      });
+      computeLinkWidths(graph, columns, ky)
     }
 
+
     function relaxLeftToRight(alpha) {
-      columns.forEach(function(nodes) {
-        nodes.forEach(function(node) {
+      columns.forEach(function (nodes) {
+        nodes.forEach(function (node) {
           if (node.targetLinks.length) {
             var dy = (sum(node.targetLinks, weightedSource) / sum(node.targetLinks, value) - nodeCenter(node)) * alpha;
             node.y0 += dy, node.y1 += dy;
@@ -219,8 +278,8 @@ export default function() {
     }
 
     function relaxRightToLeft(alpha) {
-      columns.slice().reverse().forEach(function(nodes) {
-        nodes.forEach(function(node) {
+      columns.slice().reverse().forEach(function (nodes) {
+        nodes.forEach(function (node) {
           if (node.sourceLinks.length) {
             var dy = (sum(node.sourceLinks, weightedTarget) / sum(node.sourceLinks, value) - nodeCenter(node)) * alpha;
             node.y0 += dy, node.y1 += dy;
@@ -230,12 +289,12 @@ export default function() {
     }
 
     function resolveCollisions() {
-      columns.forEach(function(nodes) {
+      columns.forEach(function (nodes) {
         var node,
-            dy,
-            y = y0,
-            n = nodes.length,
-            i;
+          dy,
+          y = y0,
+          n = nodes.length,
+          i;
 
         // Push any overlapping nodes down.
         nodes.sort(ascendingBreadth);
@@ -263,17 +322,32 @@ export default function() {
     }
   }
 
+
+  function computeKy(graph, columns) {
+    columns = columns || computeColumns(graph);
+    return min(columns, function (nodes) {
+      return (y1 - y0 - (nodes.length - 1) * py) / sum(nodes, value);
+    });
+  }
+
+  function computeLinkWidths(graph, columns, ky) {
+    ky = ky || computeKy(graph, columns);
+    graph.links.forEach(function (link) {
+      link.width = link.value * ky;
+    });
+  }
+
   function computeLinkBreadths(graph) {
-    graph.nodes.forEach(function(node) {
+    graph.nodes.forEach(function (node) {
       node.sourceLinks.sort(ascendingTargetBreadth);
       node.targetLinks.sort(ascendingSourceBreadth);
     });
-    graph.nodes.forEach(function(node) {
+    graph.nodes.forEach(function (node) {
       var y0 = node.y0, y1 = y0;
-      node.sourceLinks.forEach(function(link) {
+      node.sourceLinks.forEach(function (link) {
         link.y0 = y0 + link.width / 2, y0 += link.width;
       });
-      node.targetLinks.forEach(function(link) {
+      node.targetLinks.forEach(function (link) {
         link.y1 = y1 + link.width / 2, y1 += link.width;
       });
     });
