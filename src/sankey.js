@@ -322,10 +322,11 @@ export default function () {
     }
   }
 
-
   function computeKy(graph, columns) {
     columns = columns || computeColumns(graph);
     return min(columns, function (nodes) {
+      // Nominator is the total amount of screen height available minus the node padding
+      // Denominator is the sum of all node values (which normally represents the y1-y0 of the node) in the column
       return (y1 - y0 - (nodes.length - 1) * py) / sum(nodes, value);
     });
   }
