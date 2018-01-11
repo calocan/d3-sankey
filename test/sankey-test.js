@@ -9,14 +9,14 @@ tape("sankey(energy) returns the expected results", function(test) {
   test.end();
 });
 
-tape("sankey(energy) with geospatioal returns the expected results", function(test) {
+/*tape("sankey(energy) with geospatioal returns the expected results", function(test) {
   var sankey = d3.sankey().nodeWidth(15).nodePadding(10).extent([[1, 1], [959, 494]])
       .geospatialPositioner(function(node) { return node}).heightNormalizer(function(d) { return d.y1 }),
     energy = sankey(require("./energy"));
   test.deepEqual(energy.nodes.map(nodePosition), require("./energy-nodes"));
   test.deepEqual(energy.links.map(linkPosition), require("./energy-links"));
   test.end();
-});
+});*/
 
 function nodePosition(node) {
   return {

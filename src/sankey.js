@@ -1,7 +1,8 @@
-import {ascending, min, sum} from "d3-array";
+import {ascending, min, sum, range} from "d3-array";
 import {map, nest} from "d3-collection";
 import {justify} from "./align";
 import constant from "./constant";
+import {domain} from "d3-scale"
 
 function ascendingSourceBreadth(a, b) {
   return ascendingBreadth(a.source, b.source) || a.index - b.index;
@@ -63,7 +64,8 @@ export default function () {
     // node and returns a normalized height, y1, for geospatial mode
     heightNormalizer = null,
     // A function that expects a node an returns a normalized width, x1, for geospatial mode
-    widthNormalizer = null;
+    widthNormalizer = null,
+    linkWidthNormalizer = null;
 
   function sankey() {
     var graph = {nodes: nodes.apply(null, arguments), links: links.apply(null, arguments)};
@@ -72,7 +74,7 @@ export default function () {
       computeNodeValues(graph);
       computeGeospatialNodeDepths(graph);
       // This is normally done by computeNodeBreadths, which we don't use
-      computeLinkWidths(graph);
+      computeGeospatialLinkWidths(graph);
       computeLinkBreadths(graph);
     }
     else {
@@ -219,14 +221,21 @@ export default function () {
    */
   function computeGeospatialNodeDepths(graph) {
     var nodeValues = graph.nodes.map(function(node) { return node.value}),
-      minValue = Math.min.apply(undefined, nodeValues),
-      maxValue = Math.max.apply(undefined, nodeValues);
+    minValue = Math.min.apply(undefined, nodeValues),
+    maxNodeValue = Math.max.apply(undefined, nodeValues);
     graph.nodes.forEach(function (node) {
       Object.assign(node, {depth: 0, height: 0, x0: 0, y0: 0,
         x1: widthNormalizer ? widthNormalizer(node) : dx,
-        y1: heightNormalizer ? heightNormalizer({minValue: minValue, maxValue: maxValue}, node) : 1});
+        y1: heightNormalizer ? heightNormalizer({minValue: minValue, maxValue: maxNodeValue}, node) : 1});
       Object.assign(node, geospatialPositioner(node));
     });
+    var nodeHeights = graph.nodes.map(function(node) { return node.y1 - node.y0}),
+    minNodeHeight = Math.min.apply(undefined, nodeHeights),
+    maxNodeHeight = Math.max.apply(undefined, nodeHeights);
+    var linkValues = graph.links.map(function(link) { return link.value }),
+    minLinkValue = Math.min.apply(undefined, linkValues),
+    maxLinkValue = Math.max.apply(undefined, linkValues);
+    linkWidthNormalizer = domain(minLinkValue, maxLinkValue).range(minNodeHeight, maxNodeHeight)
   }
 
   function computeColumns(graph) {
@@ -335,6 +344,13 @@ export default function () {
     ky = ky || computeKy(graph, columns);
     graph.links.forEach(function (link) {
       link.width = link.value * ky;
+    });
+  }
+
+  // Normalize the link width to the height range of the nodes
+  function computeGeospatialLinkWidths(graph) {
+    graph.links.forEach(function (link) {
+      link.width = linkWidthNormalizer(link.value)
     });
   }
 
