@@ -1,8 +1,8 @@
-import {ascending, min, sum, range} from "d3-array";
+import {ascending, min, sum} from "d3-array";
 import {map, nest} from "d3-collection";
 import {justify} from "./align";
 import constant from "./constant";
-import {domain} from "d3-scale"
+import {scaleLinear} from "d3-scale"
 
 function ascendingSourceBreadth(a, b) {
   return ascendingBreadth(a.source, b.source) || a.index - b.index;
@@ -235,7 +235,7 @@ export default function () {
     var linkValues = graph.links.map(function(link) { return link.value }),
     minLinkValue = Math.min.apply(undefined, linkValues),
     maxLinkValue = Math.max.apply(undefined, linkValues);
-    linkWidthNormalizer = domain(minLinkValue, maxLinkValue).range(minNodeHeight, maxNodeHeight)
+    linkWidthNormalizer = scaleLinear().domain([minLinkValue, maxLinkValue]).range([minNodeHeight, maxNodeHeight])
   }
 
   function computeColumns(graph) {
@@ -360,12 +360,12 @@ export default function () {
       node.targetLinks.sort(ascendingSourceBreadth);
     });
     graph.nodes.forEach(function (node) {
-      var y0 = node.y0, y1 = y0;
+      var y0 = node.y1 + node.y0 / 2 , y1 = y0;
       node.sourceLinks.forEach(function (link) {
-        link.y0 = y0 + link.width / 2, y0 += link.width;
+        link.y0 = y0 + link.width / 2 //, y0 += link.width;
       });
       node.targetLinks.forEach(function (link) {
-        link.y1 = y1 + link.width / 2, y1 += link.width;
+        link.y1 = y1 + link.width / 2 //, y1 += link.width;
       });
     });
   }

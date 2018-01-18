@@ -23,7 +23,7 @@ function nodePosition(node) {
     x: round(node.x0),
     dx: round(node.x1 - node.x0),
     y: round(node.y0),
-    dy: round(node.y1 - node.y0)
+    dy: round(node.y1 - node.y0),
   };
 }
 
