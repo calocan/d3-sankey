@@ -1,4 +1,6 @@
-# d3-sankey
+# rescape-geospatial-sankey
+
+This is a fork of d3-sankey that allows geospatial positioning on a map
 
 Sankey diagrams visualize the directed flow between nodes in an acyclic network. For example, this diagram shows a possible scenario of UK energy production and consumption in 2050:
 

@@ -8,16 +8,10 @@ const env = process.env.NODE_ENV;
 const config = {
   input: [
     'src/index.js',
-    'src/configHelpers.js',
-    'src/geojsonHelpers.js',
-    'src/geospatialHelpers.js',
-    'src/immutableHelpers.js',
-    'src/locationHelpers.js',
-    'src/sankeyHelpers.js',
-    'src/selectorHelpers.js',
-    'src/svgHelpers.js',
-    'src/testHelpers.js',
-    'src/timeHelpers.js'
+    'src/align.js',
+    'src/constant.js',
+    'src/sankey.js',
+    'src/sankeyLinkHorizontal.js'
   ],
   plugins: [
     // Automatically exclude dependencies and peerDependencies from cjs and es builds, (and excludes
@@ -34,10 +28,7 @@ if (env === 'es' || env === 'cjs') {
     indent: false,
     sourcemap: 'inline'
   };
-  // folktale needs to be explicitly external because rollup can't
-  // match folktale to folktale/concurrency/task
-  // enzyme and enzyme-wait are dev-dependencies that are used by componentTestHelpers, so mark external here
-  config.external = ['symbol-observable', 'folktale/concurrency/task', 'folktale/result', 'enzyme', 'enzyme-wait']
+  config.external = ['symbol-observable'];
   config.plugins.push(
     babel({
       exclude: ['node_modules/**'],

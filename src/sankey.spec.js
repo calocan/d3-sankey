@@ -1,22 +1,4 @@
-const tape = require('tape');
-const sankey = require('../src/sankey');
-
-/*tape("sankey(energy) returns the expected results", function(test) {
-  var sankey = d3.sankey().nodeWidth(15).nodePadding(10).extent([[1, 1], [959, 494]]),
-      energy = sankey(require("./energy"));
-  test.deepEqual(energy.nodes.map(nodePosition), require("./energy-nodes"));
-  test.deepEqual(energy.links.map(linkPosition), require("./energy-links"));
-  test.end();
-});*/
-
-/*tape("sankey(energy) with geospatioal returns the expected results", function(test) {
-  var sankey = d3.sankey().nodeWidth(15).nodePadding(10).extent([[1, 1], [959, 494]])
-      .geospatialPositioner(function(node) { return node}).heightNormalizer(function(d) { return d.y1 }),
-    energy = sankey(require("./energy"));
-  test.deepEqual(energy.nodes.map(nodePosition), require("./energy-nodes"));
-  test.deepEqual(energy.links.map(linkPosition), require("./energy-links"));
-  test.end();
-});*/
+import generateSankey from '../src/sankey';
 
 function nodePosition(node) {
   return {
@@ -40,3 +22,24 @@ function linkPosition(link) {
 function round(x) {
   return Math.round(x * 10) / 10;
 }
+
+describe('sankey', () => {
+  test('regular sankey', () => {
+    const sankey = generateSankey().nodeWidth(15).nodePadding(10).extent([[1, 1], [959, 494]]);
+    const energy = sankey(require("./samples/energy.json"));
+    expect(energy.nodes.map(nodePosition)).toEqual(require("./samples/energy-nodes.json"));
+    expect(energy.links.map(linkPosition)).toEqual(require("./samples/energy-links.json"));
+  });
+
+  test('geospatial sankey', () => {
+    const sankey = generateSankey().nodeWidth(15).nodePadding(10).extent([[1, 1], [959, 494]])
+      .geospatialPositioner(function (node) {
+        return node;
+      }).heightNormalizer(function (d) {
+        return d.y1;
+      });
+    const energy = sankey(require("./samples/energy.json"));
+    expect(energy.nodes.map(nodePosition)).toEqual(require("./samples/energy-nodes.json"));
+    expect(energy.links.map(linkPosition)).toEqwual(require("./samples/energy-links.json"));
+  });
+});

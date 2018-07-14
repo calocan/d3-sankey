@@ -11,8 +11,7 @@
 
 import * as R from 'ramda';
 import {sankey} from 'rescape-geospatial-sankey';
-import {asUnaryMemoize} from './selectorHelpers';
-import {resolveFeatureFromExtent, resolveSvgPoints} from './svgHelpers';
+import {asUnaryMemoize, resolveFeatureFromExtent, resolveSvgPoints} from 'rescape-helpers'
 import bbox from '@turf/bbox';
 import bboxPolygon from '@turf/bbox-polygon';
 import center from '@turf/center';
@@ -20,7 +19,6 @@ import rhumbDistance from '@turf/rhumb-distance';
 import rhumbBearing from '@turf/rhumb-bearing';
 import transformTranslate from '@turf/transform-translate';
 import {scaleLinear} from 'd3-scale';
-import parseDecimalNumber from 'parse-decimal-number';
 import {reqStrPathThrowing} from 'rescape-ramda';
 import {v} from 'rescape-validate';
 import PropTypes from 'prop-types';
@@ -47,9 +45,9 @@ export const sankeyGenerator = asUnaryMemoize(v(({width, height, nodeWidth, node
   const heightNormalizer = ({minValue, maxValue}, node) => {
     const normalized = scaleLinear()
       .domain([minValue, maxValue])
-      .range([10, 100])(parseDecimalNumber(reqStrPathThrowing('value', node)));
+      .range([10, 100])(reqStrPathThrowing('value', node))
     if (!normalized.y1)
-      throw new Error(`Failed to normalize y1 using minValue: ${minValue}, maxValue: ${maxValue} and node value: ${parseDecimalNumber(reqStrPathThrowing('value', node))}`);
+      throw new Error(`Failed to normalize y1 using minValue: ${minValue}, maxValue: ${maxValue} and node value: ${reqStrPathThrowing('value', node)}`);
     return normalized;
   };
 
