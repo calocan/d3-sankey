@@ -1,6 +1,6 @@
 {
   "name": "rescape-geospatial-sankey",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Visualize flow between nodes in a directed acyclic network on a Mapbox map",
   "keywords": [
     "d3",
@@ -59,6 +59,8 @@
     "babelrc-rollup": "^3.0.0",
     "cross-env": "^5.2.0",
     "eslint": "^5.1.0",
+    "eslint-loader": "^2.0.0",
+    "eslint-plugin-jest": "^21.17.0",
     "jest": "^23.4.0",
     "package-preamble": "0.1.0",
     "rollup": "^0.62.0",
