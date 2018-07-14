@@ -1,6 +1,6 @@
 {
   "name": "rescape-geospatial-sankey",
-  "version": "0.7.10",
+  "version": "0.7.11",
   "description": "Visualize flow between nodes in a directed acyclic network on a Mapbox map",
   "keywords": [
     "d3",
@@ -13,8 +13,8 @@
   },
   "license": "BSD-3-Clause",
   "main": "lib/index.js",
-  "module": "index",
-  "jsnext:main": "index",
+  "module": "es/index.js",
+  "jsnext:main": "es/index.js",
   "homepage": "https://github.com/calocan/rescape-geospatial-sankey",
   "repository": {
     "type": "git",
@@ -40,7 +40,8 @@
     "d3-array": "1",
     "d3-collection": "1",
     "d3-scale": "^1.0.7",
-    "d3-shape": "^1.2.0"
+    "d3-shape": "^1.2.0",
+    "rescape-helpers": "^1.1.49"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
