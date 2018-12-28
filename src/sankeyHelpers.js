@@ -11,7 +11,7 @@
 
 import * as R from 'ramda';
 import {sankey} from 'rescape-geospatial-sankey';
-import {asUnaryMemoize, resolveFeatureFromExtent, resolveSvgPoints} from 'rescape-helpers'
+import {resolveFeatureFromExtent, resolveSvgPoints} from 'rescape-helpers'
 import bbox from '@turf/bbox';
 import bboxPolygon from '@turf/bbox-polygon';
 import center from '@turf/center';
@@ -19,7 +19,7 @@ import rhumbDistance from '@turf/rhumb-distance';
 import rhumbBearing from '@turf/rhumb-bearing';
 import transformTranslate from '@turf/transform-translate';
 import {scaleLinear} from 'd3-scale';
-import {reqStrPathThrowing} from 'rescape-ramda';
+import {reqStrPathThrowing, memoized} from 'rescape-ramda';
 import {v} from 'rescape-validate';
 import PropTypes from 'prop-types';
 
@@ -38,7 +38,7 @@ import PropTypes from 'prop-types';
  * nodes array and must have a value indicating the weight of the headerLink
  * @returns {null}
  */
-export const sankeyGenerator = asUnaryMemoize(v(({width, height, nodeWidth, nodePadding, geospatialPositioner, valueKey}, sankeyData) => {
+export const sankeyGenerator = memoized(v(({width, height, nodeWidth, nodePadding, geospatialPositioner, valueKey}, sankeyData) => {
   // d3 mutates the data
   const data = R.clone(sankeyData);
   // Normalize heights to range from 10 pixes to 100 pixels independent of the zoom
