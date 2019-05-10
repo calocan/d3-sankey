@@ -1,4 +1,4 @@
-import {min} from "d3-array";
+import {min} from 'd3-array';
 
 function targetDepth(d) {
   return d.target.depth;
@@ -19,7 +19,6 @@ export function justify(node, n) {
 }
 
 export function center(node) {
-  return node.targetLinks.length ? node.depth
-      : node.sourceLinks.length ? min(node.sourceLinks, targetDepth) - 1
-      : 0;
+  const defaultCenter = (node.sourceLinks.length ? min(node.sourceLinks, targetDepth) - 1 : 0);
+  return node.targetLinks.length ? node.depth : defaultCenter;
 }

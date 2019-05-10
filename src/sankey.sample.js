@@ -1,6 +1,6 @@
 
 // https://github.com/d3/d3-sankey/tree/master/test
-module.exports = {
+export default {
   nodes: [
     {
       name: 'Agricultural \'waste\''

@@ -13,7 +13,11 @@
   },
   "license": "BSD-3-Clause",
   "main": "lib/index.js",
-  "module": "es/index.js",
+  "module": "esm/index.mjs",
+  "files": [
+    "esm",
+    "src"
+  ],
   "jsnext:main": "es/index.js",
   "homepage": "https://github.com/calocan/rescape-geospatial-sankey",
   "repository": {
@@ -23,94 +27,57 @@
   "scripts": {
     "clean": "rimraf lib dist es coverage",
     "lint": "eslint src",
-    "test": "cross-env BABEL_ENV=commonjs jest",
+    "test": "cross-env jest",
     "test:watch": "yarn test -- --watch",
     "test:cov": "yarn test -- --coverage",
-    "build:commonjs": "cross-env NODE_ENV=production BABEL_ENV=commonjs  node_modules/.bin/babel src --out-dir lib",
-    "build:es": "BABEL_ENV=es NODE_ENV=es node node_modules/.bin/rollup  -c",
-    "build:umd": "cross-env BABEL_ENV=es NODE_ENV=development node_modules/.bin/rollup -c -out-dir dist",
-    "build:umd:min": "cross-env BABEL_ENV=es NODE_ENV=production NODE_ENV=production rollup -c -out-dir dist",
-    "build": "yarn run build:commonjs && yarn run build:es",
-    "build-publish-patch": "yarn run build && yarn run publish-patch",
-    "build-publish-minor": "yarn run build && yarn run publish-minor",
+    "build": "rollup -c",
+    "prepare": "yarn run clean && yarn test && yarn run build",
     "publish-patch": "yarn --new-version version patch && yarn publish",
     "publish-minor": "yarn --new-version version minor && yarn publish"
   },
   "dependencies": {
-    "d3-array": "1",
+    "d3-array": "2.0.3",
     "d3-collection": "1",
-    "d3-scale": "^1.0.7",
+    "d3-scale": "^3.0.0",
     "d3-shape": "^1.2.0",
-    "rescape-helpers": "^1.1.78",
-    "rescape-ramda": "^1.5.24"
+    "ramda": "^0.26.1",
+    "rescape-helpers": "^1.1.83",
+    "rescape-ramda": "^1.5.38"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "6.26.3",
-    "babel-eslint": "8.2.6",
-    "babel-jest": "23.4.0",
-    "babel-loader": "7.1.5",
-    "babel-plugin-external-helpers": "^6.22.0",
+    "@babel/core": "^7.4.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.4",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/polyfill": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
+    "@babel/runtime": "^7.4.4",
+    "@types/jest": "^24.0.12",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^24.8.0",
     "babel-plugin-transform-es2015-modules-commonjs-simple": "^6.7.4",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-runtime": "^6.26.0",
     "babelrc-rollup": "^3.0.0",
     "cross-env": "^5.2.0",
     "eslint": "^5.1.0",
     "eslint-loader": "^2.0.0",
-    "eslint-plugin-jest": "^21.17.0",
-    "jest": "^23.4.0",
+    "eslint-plugin-jest": "^22.5.1",
+    "jest": "^24.8.0",
     "package-preamble": "0.1.0",
-    "rollup": "^0.62.0",
-    "rollup-plugin-auto-external": "^1.2.0",
-    "rollup-plugin-babel": "^3.0.7",
-    "rollup-plugin-commonjs": "9.1.3",
-    "rollup-plugin-json": "^3.0.0",
+    "rollup": "^1.11.3",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-commonjs": "9.3.4",
+    "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-node-globals": "1.2.1",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-replace": "^2.0.0",
-    "rollup-plugin-uglify": "^4.0.0",
-    "rollup-watch": "4.3.1",
-    "tape": "4",
-    "uglify-js": "3"
+    "rollup-plugin-node-globals": "1.4.0",
+    "rollup-plugin-node-resolve": "^4.2.3",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-terser": "^4.0.4"
   },
   "babel": {
-    "presets": [
-      [
-        "env",
-        {
-          "targets": {
-            "browsers": [
-              "ie >= 11"
-            ]
-          },
-          "exclude": [
-            "transform-async-to-generator"
-          ],
-          "modules": false
-        }
-      ]
-    ],
     "sourceMaps": true,
-    "plugins": [
-      "transform-object-rest-spread"
+    "presets": [
+      "@babel/preset-env"
     ],
     "env": {
-      "commonjs": {
-        "presets": [
-          [
-            "env",
-            {
-              "targets": {
-                "node": "current"
-              }
-            }
-          ]
-        ]
-      },
       "test": {
         "plugins": [
           [
@@ -120,14 +87,13 @@
             }
           ],
           [
-            "transform-runtime",
+            "@babel/plugin-transform-runtime",
             {
-              "polyfill": false,
+              "helpers": true,
               "regenerator": true
             }
           ]
-        ],
-        "presets": []
+        ]
       }
     }
   }

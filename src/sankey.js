@@ -1,8 +1,8 @@
-import {ascending, min, sum} from "d3-array";
-import {map, nest} from "d3-collection";
-import {justify} from "./align";
-import constant from "./constant";
-import {scaleLinear} from "d3-scale"
+import {ascending, min, sum} from 'd3-array';
+import {map, nest} from 'd3-collection';
+import {justify} from './align';
+import constant from './constant';
+import {scaleLinear} from 'd3-scale';
 
 function ascendingSourceBreadth(a, b) {
   return ascendingBreadth(a.source, b.source) || a.index - b.index;
@@ -45,13 +45,15 @@ function defaultLinks(graph) {
 }
 
 function find(nodeById, id) {
-  var node = nodeById.get(id);
-  if (!node) throw new Error("missing: " + id);
+  let node = nodeById.get(id);
+  if (!node) {
+throw new Error('missing: ' + id);
+}
   return node;
 }
 
 export default function () {
-  var x0 = 0, y0 = 0, x1 = 1, y1 = 1, // extent
+  let x0 = 0, y0 = 0, x1 = 1, y1 = 1, // extent
     dx = 24, // nodeWidth
     py = 8, // nodePadding
     id = defaultId,
@@ -68,7 +70,7 @@ export default function () {
     linkWidthNormalizer = null;
 
   function sankey() {
-    var graph = {nodes: nodes.apply(null, arguments), links: links.apply(null, arguments)};
+    let graph = {nodes: nodes.apply(null, arguments), links: links.apply(null, arguments)};
     if (geospatialPositioner) {
       computeNodeLinks(graph);
       computeNodeValues(graph);
@@ -76,8 +78,7 @@ export default function () {
       // This is normally done by computeNodeBreadths, which we don't use
       computeGeospatialLinkWidths(graph);
       computeLinkBreadths(graph);
-    }
-    else {
+    } else {
       computeNodeLinks(graph);
       computeNodeValues(graph);
       computeNodeDepths(graph);
@@ -93,11 +94,11 @@ export default function () {
   };
 
   sankey.nodeId = function (_) {
-    return arguments.length ? (id = typeof _ === "function" ? _ : constant(_), sankey) : id;
+    return arguments.length ? (id = typeof _ === 'function' ? _ : constant(_), sankey) : id;
   };
 
   sankey.nodeAlign = function (_) {
-    return arguments.length ? (align = typeof _ === "function" ? _ : constant(_), sankey) : align;
+    return arguments.length ? (align = typeof _ === 'function' ? _ : constant(_), sankey) : align;
   };
 
   sankey.nodeWidth = function (_) {
@@ -109,11 +110,11 @@ export default function () {
   };
 
   sankey.nodes = function (_) {
-    return arguments.length ? (nodes = typeof _ === "function" ? _ : constant(_), sankey) : nodes;
+    return arguments.length ? (nodes = typeof _ === 'function' ? _ : constant(_), sankey) : nodes;
   };
 
   sankey.links = function (_) {
-    return arguments.length ? (links = typeof _ === "function" ? _ : constant(_), sankey) : links;
+    return arguments.length ? (links = typeof _ === 'function' ? _ : constant(_), sankey) : links;
   };
 
   sankey.size = function (_) {
@@ -148,12 +149,16 @@ export default function () {
       node.sourceLinks = [];
       node.targetLinks = [];
     });
-    var nodeById = map(graph.nodes, id);
+    let nodeById = map(graph.nodes, id);
     graph.links.forEach(function (link, i) {
       link.index = i;
-      var source = link.source, target = link.target;
-      if (typeof source !== "object") source = link.source = find(nodeById, source);
-      if (typeof target !== "object") target = link.target = find(nodeById, target);
+      let source = link.source, target = link.target;
+      if (typeof source !== 'object') {
+source = link.source = find(nodeById, source);
+}
+      if (typeof target !== 'object') {
+target = link.target = find(nodeById, target);
+}
       source.sourceLinks.push(link);
       target.targetLinks.push(link);
     });
@@ -174,7 +179,7 @@ export default function () {
   // nodes with no incoming links are assigned depth zero, while
   // nodes with no outgoing links are assigned the maximum depth.
   function computeNodeDepths(graph) {
-    var nodes, next, x;
+    let nodes, next, x;
 
     for (nodes = graph.nodes, next = [], x = 0; nodes.length; ++x, nodes = next, next = []) {
       nodes.forEach(function (node) {
@@ -207,7 +212,7 @@ export default function () {
     // kx is the column width of the view minus the padding between nodes divided by the number of columns
     // If there are only two columns kx is the whole view width
     // If there are three columns key is half the view width, etc
-    var kx = (x1 - x0 - dx) / (x - 1);
+    let kx = (x1 - x0 - dx) / (x - 1);
     graph.nodes.forEach(function (node) {
       // The x0 position is between 0 and the max column index times the kx width
       // The x0 plus the node padding
@@ -220,7 +225,9 @@ export default function () {
    * @param graph
    */
   function computeGeospatialNodeDepths(graph) {
-    var nodeValues = graph.nodes.map(function(node) { return node.value}),
+    let nodeValues = graph.nodes.map(function (node) {
+ return node.value;
+}),
     minValue = Math.min.apply(undefined, nodeValues),
     maxNodeValue = Math.max.apply(undefined, nodeValues);
     graph.nodes.forEach(function (node) {
@@ -229,13 +236,17 @@ export default function () {
         y1: heightNormalizer ? heightNormalizer({minValue: minValue, maxValue: maxNodeValue}, node) : 1});
       Object.assign(node, geospatialPositioner(node));
     });
-    var nodeHeights = graph.nodes.map(function(node) { return node.y1 - node.y0}),
+    let nodeHeights = graph.nodes.map(function (node) {
+ return node.y1 - node.y0;
+}),
     minNodeHeight = Math.min.apply(undefined, nodeHeights),
     maxNodeHeight = Math.max.apply(undefined, nodeHeights);
-    var linkValues = graph.links.map(function(link) { return link.value }),
+    let linkValues = graph.links.map(function (link) {
+ return link.value;
+}),
     minLinkValue = Math.min.apply(undefined, linkValues),
     maxLinkValue = Math.max.apply(undefined, linkValues);
-    linkWidthNormalizer = scaleLinear().domain([minLinkValue, maxLinkValue]).range([minNodeHeight, maxNodeHeight])
+    linkWidthNormalizer = scaleLinear().domain([minLinkValue, maxLinkValue]).range([minNodeHeight, maxNodeHeight]);
   }
 
   function computeColumns(graph) {
@@ -251,19 +262,19 @@ export default function () {
   }
 
   function computeNodeBreadths(graph) {
-    var columns = computeColumns(graph)
+    let columns = computeColumns(graph);
 
     initializeNodeBreadth();
     resolveCollisions();
-    for (var alpha = 1, n = iterations; n > 0; --n) {
-      relaxRightToLeft(alpha *= 0.99);
+    for (let alpha = 1, n = iterations; n > 0; --n) {
+      relaxRightToLeft(alpha = alpha * 0.99);
       resolveCollisions();
       relaxLeftToRight(alpha);
       resolveCollisions();
     }
 
     function initializeNodeBreadth() {
-      var ky = computeKy(graph, columns)
+      let ky = computeKy(graph, columns);
 
       columns.forEach(function (nodes) {
         nodes.forEach(function (node, i) {
@@ -271,7 +282,7 @@ export default function () {
         });
       });
 
-      computeLinkWidths(graph, columns, ky)
+      computeLinkWidths(graph, columns, ky);
     }
 
 
@@ -279,8 +290,8 @@ export default function () {
       columns.forEach(function (nodes) {
         nodes.forEach(function (node) {
           if (node.targetLinks.length) {
-            var dy = (sum(node.targetLinks, weightedSource) / sum(node.targetLinks, value) - nodeCenter(node)) * alpha;
-            node.y0 += dy, node.y1 += dy;
+            let dy = (sum(node.targetLinks, weightedSource) / sum(node.targetLinks, value) - nodeCenter(node)) * alpha;
+            node.y0 = node.y0 + dy, node.y1 = node.y1 + dy;
           }
         });
       });
@@ -290,8 +301,8 @@ export default function () {
       columns.slice().reverse().forEach(function (nodes) {
         nodes.forEach(function (node) {
           if (node.sourceLinks.length) {
-            var dy = (sum(node.sourceLinks, weightedTarget) / sum(node.sourceLinks, value) - nodeCenter(node)) * alpha;
-            node.y0 += dy, node.y1 += dy;
+            let dy = (sum(node.sourceLinks, weightedTarget) / sum(node.sourceLinks, value) - nodeCenter(node)) * alpha;
+            node.y0 = node.y0 + dy, node.y1 = node.y1 + dy;
           }
         });
       });
@@ -299,7 +310,7 @@ export default function () {
 
     function resolveCollisions() {
       columns.forEach(function (nodes) {
-        var node,
+        let node,
           dy,
           y = y0,
           n = nodes.length,
@@ -310,20 +321,24 @@ export default function () {
         for (i = 0; i < n; ++i) {
           node = nodes[i];
           dy = y - node.y0;
-          if (dy > 0) node.y0 += dy, node.y1 += dy;
+          if (dy > 0) {
+node.y0 = node.y0 + dy, node.y1 = node.y1 + dy;
+}
           y = node.y1 + py;
         }
 
         // If the bottommost node goes outside the bounds, push it back up.
         dy = y - py - y1;
         if (dy > 0) {
-          y = (node.y0 -= dy), node.y1 -= dy;
+          y = (node.y0 = node.y0 - dy), node.y1 = node.y1 - dy;
 
           // Push any overlapping nodes back up.
           for (i = n - 2; i >= 0; --i) {
             node = nodes[i];
             dy = node.y1 + py - y;
-            if (dy > 0) node.y0 -= dy, node.y1 -= dy;
+            if (dy > 0) {
+node.y0 = node.y0 - dy, node.y1 = node.y1 - dy;
+}
             y = node.y0;
           }
         }
@@ -350,7 +365,7 @@ export default function () {
   // Normalize the link width to the height range of the nodes
   function computeGeospatialLinkWidths(graph) {
     graph.links.forEach(function (link) {
-      link.width = linkWidthNormalizer(link.value)
+      link.width = linkWidthNormalizer(link.value);
     });
   }
 
@@ -360,12 +375,12 @@ export default function () {
       node.targetLinks.sort(ascendingSourceBreadth);
     });
     graph.nodes.forEach(function (node) {
-      var y0 = node.y1 + node.y0 / 2 , y1 = y0;
+      let y0 = node.y1 + node.y0 / 2, y1 = y0;
       node.sourceLinks.forEach(function (link) {
-        link.y0 = y0 + link.width / 2 //, y0 += link.width;
+        link.y0 = y0 + link.width / 2; // , y0 += link.width;
       });
       node.targetLinks.forEach(function (link) {
-        link.y1 = y1 + link.width / 2 //, y1 += link.width;
+        link.y1 = y1 + link.width / 2; // , y1 += link.width;
       });
     });
   }

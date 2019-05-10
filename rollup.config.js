@@ -1,10 +1,11 @@
 import nodeResolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
 import replace from 'rollup-plugin-replace';
-import uglify from 'rollup-plugin-uglify';
-import autoExternal from 'rollup-plugin-auto-external';
+import {terser} from 'rollup-plugin-terser';
+import commonjs from 'rollup-plugin-commonjs';
+import pkg from './package.json';
+import * as R from 'ramda';
 
-const env = process.env.NODE_ENV;
 const config = {
   input: [
     'src/index.js',
@@ -13,62 +14,83 @@ const config = {
     'src/sankey.js',
     'src/sankeyLinkHorizontal.js'
   ],
-  plugins: [
-    // Automatically exclude dependencies and peerDependencies from cjs and es builds, (and excludes
-    // peerDependencies from all builds)
-    autoExternal()
-  ],
-  experimentalCodeSplitting: true
+  plugins: []
 };
+const externals = ['symbol-observable', 'folktale/concurrency/task', 'folktale/result/index', 'ramda-fantasy-validation'];
 
-if (env === 'es' || env === 'cjs') {
-  config.output = {
-    dir: env,
-    format: env,
-    indent: false,
-    sourcemap: 'inline'
-  };
-  config.external = ['symbol-observable'];
-  config.plugins.push(
-    babel({
-      exclude: ['node_modules/**'],
-      plugins: ['external-helpers']
-    })
-  );
-}
+const configs = R.map(c => {
+  const x = R.merge(config, c);
+  //console.warn(x);
+  return x;
+}, [
+  // CommonJS
+  {
+    output: {
+      dir: 'lib',
+      format: 'cjs',
+      indent: true,
+      sourcemap: true
+    },
+    external: [
+      ...externals,
+      ...Object.keys(pkg.dependencies || {}),
+      ...Object.keys(pkg.peerDependencies || {})
+    ],
+    plugins: R.concat(config.plugins, [
+      commonjs({
+        'node_modules/folktale/result/index.js': ['Result', 'Error', 'Ok'],
+        'node_modules/folktale/concurrency/task/index.js': ['task', 'rejected', 'of']
+      }),
+      babel()
+    ])
+  },
+  // ES
+  {
+    output: {
+      dir: 'esm',
+      format: 'esm',
+      indent: true,
+      sourcemap: true
+    },
+    external: [
+      ...externals,
+      ...Object.keys(pkg.dependencies || {}),
+      ...Object.keys(pkg.peerDependencies || {})
+    ],
+    plugins: R.concat(config.plugins, [
+      nodeResolve({}), babel()
+    ])
+  },
 
-if (env === 'development' || env === 'production') {
-  config.output = {
-    dir: 'umd',
-    format: 'umd',
-    name: 'Umd',
-    indent: false
-  };
-  config.plugins.push(
-    nodeResolve({
-      jsnext: true
-    }),
-    babel({
-      exclude: 'node_modules/**',
-      plugins: ['external-helpers']
-    }),
-    replace({
-      'process.env.NODE_ENV': JSON.stringify(env)
-    })
-  );
-}
-
-if (env === 'production') {
-  config.plugins.push(
-    uglify({
-      compress: {
-        pure_getters: true,
-        unsafe: true,
-        unsafe_comps: true,
-        warnings: false
-      }
-    })
-  );
-}
-
-export default config;
+  // ES for Browsers
+  {
+    output: {
+      dir: 'esm',
+      chunkFileNames: "[name]-[hash].mjs",
+      entryFileNames: "[name].mjs",
+      format: 'esm',
+      indent: true,
+      sourcemap: true
+    },
+    external: [
+      ...externals,
+      ...Object.keys(pkg.dependencies || {}),
+      ...Object.keys(pkg.peerDependencies || {})
+    ],
+    plugins: R.concat(config.plugins, [
+      nodeResolve({}),
+      replace({
+        'process.env.NODE_ENV': JSON.stringify('production')
+      }),
+      terser({
+        compress: {
+          pure_getters: true,
+          unsafe: true,
+          unsafe_comps: true,
+          warnings: false
+        }
+      })
+    ])
+  }
+]);
+export default configs;
