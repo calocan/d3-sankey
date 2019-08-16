@@ -41,8 +41,8 @@
     "d3-scale": "^3.0.1",
     "d3-shape": "^1.2.0",
     "ramda": "^0.26.1",
-    "rescape-helpers": "^1.1.98",
-    "rescape-ramda": "^1.5.77"
+    "rescape-helpers": "^1.1.99",
+    "rescape-ramda": "^1.5.78"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
@@ -53,14 +53,14 @@
     "@babel/runtime": "^7.5.5",
     "@types/jest": "^24.0.17",
     "babel-eslint": "^10.0.2",
-    "babel-jest": "^24.8.0",
+    "babel-jest": "^24.9.0",
     "babel-plugin-transform-es2015-modules-commonjs-simple": "^6.7.4",
     "babelrc-rollup": "^3.0.0",
     "cross-env": "^5.2.0",
     "eslint": "^6.1.0",
     "eslint-loader": "^2.2.1",
     "eslint-plugin-jest": "^22.15.1",
-    "jest": "^24.8.0",
+    "jest": "^24.9.0",
     "package-preamble": "0.1.0",
     "rollup": "^1.19.4",
     "rollup-plugin-babel": "^4.3.3",
