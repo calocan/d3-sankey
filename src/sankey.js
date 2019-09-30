@@ -3,6 +3,7 @@ import {map, nest} from 'd3-collection';
 import {justify} from './align';
 import constant from './constant';
 import {scaleLinear} from 'd3-scale';
+import * as R from 'ramda';
 
 function ascendingSourceBreadth(a, b) {
   return ascendingBreadth(a.source, b.source) || a.index - b.index;
@@ -47,8 +48,8 @@ function defaultLinks(graph) {
 function find(nodeById, id) {
   let node = nodeById.get(id);
   if (!node) {
-throw new Error('missing: ' + id);
-}
+    throw new Error('missing: ' + id);
+  }
   return node;
 }
 
@@ -70,7 +71,7 @@ export default function () {
     linkWidthNormalizer = null;
 
   function sankey() {
-    let graph = {nodes: nodes.apply(null, arguments), links: links.apply(null, arguments)};
+    const graph = {nodes: nodes.apply(null, arguments), links: links.apply(null, arguments)};
     if (geospatialPositioner) {
       computeNodeLinks(graph);
       computeNodeValues(graph);
@@ -154,11 +155,11 @@ export default function () {
       link.index = i;
       let source = link.source, target = link.target;
       if (typeof source !== 'object') {
-source = link.source = find(nodeById, source);
-}
+        source = link.source = find(nodeById, source);
+      }
       if (typeof target !== 'object') {
-target = link.target = find(nodeById, target);
-}
+        target = link.target = find(nodeById, target);
+      }
       source.sourceLinks.push(link);
       target.targetLinks.push(link);
     });
@@ -226,26 +227,28 @@ target = link.target = find(nodeById, target);
    */
   function computeGeospatialNodeDepths(graph) {
     let nodeValues = graph.nodes.map(function (node) {
- return node.value;
-}),
-    minValue = Math.min.apply(undefined, nodeValues),
-    maxNodeValue = Math.max.apply(undefined, nodeValues);
+        return node.value;
+      }),
+      minValue = Math.min.apply(undefined, nodeValues),
+      maxNodeValue = Math.max.apply(undefined, nodeValues);
     graph.nodes.forEach(function (node) {
-      Object.assign(node, {depth: 0, height: 0, x0: 0, y0: 0,
+      Object.assign(node, {
+        depth: 0, height: 0, x0: 0, y0: 0,
         x1: widthNormalizer ? widthNormalizer(node) : dx,
-        y1: heightNormalizer ? heightNormalizer({minValue: minValue, maxValue: maxNodeValue}, node) : 1});
+        y1: heightNormalizer ? heightNormalizer({minValue: minValue, maxValue: maxNodeValue}, node) : 1
+      });
       Object.assign(node, geospatialPositioner(node));
     });
     let nodeHeights = graph.nodes.map(function (node) {
- return node.y1 - node.y0;
-}),
-    minNodeHeight = Math.min.apply(undefined, nodeHeights),
-    maxNodeHeight = Math.max.apply(undefined, nodeHeights);
+        return node.y1 - node.y0;
+      }),
+      minNodeHeight = Math.min.apply(undefined, nodeHeights),
+      maxNodeHeight = Math.max.apply(undefined, nodeHeights);
     let linkValues = graph.links.map(function (link) {
- return link.value;
-}),
-    minLinkValue = Math.min.apply(undefined, linkValues),
-    maxLinkValue = Math.max.apply(undefined, linkValues);
+        return link.value;
+      }),
+      minLinkValue = Math.min.apply(undefined, linkValues),
+      maxLinkValue = Math.max.apply(undefined, linkValues);
     linkWidthNormalizer = scaleLinear().domain([minLinkValue, maxLinkValue]).range([minNodeHeight, maxNodeHeight]);
   }
 
@@ -322,8 +325,8 @@ target = link.target = find(nodeById, target);
           node = nodes[i];
           dy = y - node.y0;
           if (dy > 0) {
-node.y0 = node.y0 + dy, node.y1 = node.y1 + dy;
-}
+            node.y0 = node.y0 + dy, node.y1 = node.y1 + dy;
+          }
           y = node.y1 + py;
         }
 
@@ -337,8 +340,8 @@ node.y0 = node.y0 + dy, node.y1 = node.y1 + dy;
             node = nodes[i];
             dy = node.y1 + py - y;
             if (dy > 0) {
-node.y0 = node.y0 - dy, node.y1 = node.y1 - dy;
-}
+              node.y0 = node.y0 - dy, node.y1 = node.y1 - dy;
+            }
             y = node.y0;
           }
         }
