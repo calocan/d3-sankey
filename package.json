@@ -1,6 +1,6 @@
 {
   "name": "rescape-geospatial-sankey",
-  "version": "0.7.22",
+  "version": "0.7.23",
   "description": "Visualize flow between nodes in a directed acyclic network on a Mapbox map",
   "keywords": [
     "d3",
@@ -13,8 +13,9 @@
   },
   "license": "BSD-3-Clause",
   "main": "lib/index.js",
-  "module": "esm/index.mjs",
+  "module": "esm/index.js",
   "files": [
+    "lib",
     "esm",
     "src"
   ],
