@@ -11,7 +11,7 @@
 
 import * as R from 'ramda';
 import {sankey} from 'rescape-geospatial-sankey';
-import {resolveFeatureFromExtent, resolveSvgPoints} from 'rescape-helpers'
+import {resolveFeatureFromExtent, resolveSvgPoints} from 'rescape-helpers';
 import bbox from '@turf/bbox';
 import bboxPolygon from '@turf/bbox-polygon';
 import center from '@turf/center';
@@ -19,7 +19,7 @@ import rhumbDistance from '@turf/rhumb-distance';
 import rhumbBearing from '@turf/rhumb-bearing';
 import transformTranslate from '@turf/transform-translate';
 import {scaleLinear} from 'd3-scale';
-import {reqStrPathThrowing, memoized} from 'rescape-ramda';
+import {reqStrPathThrowing, memoized, strPathOr, reqStrPath} from 'rescape-ramda';
 import {v} from 'rescape-validate';
 import PropTypes from 'prop-types';
 
@@ -38,43 +38,31 @@ import PropTypes from 'prop-types';
  * nodes array and must have a value indicating the weight of the headerLink
  * @returns {null}
  */
-export const sankeyGenerator = memoized(v(({width, height, nodeWidth, nodePadding, geospatialPositioner, valueKey}, sankeyData) => {
+export const sankeyGenerator = memoized(v((
+  {viewport, width, height, nodeWidth, nodePadding, geospatialPositioner, valueKey},
+  sankeyData
+) => {
   // d3 mutates the data
   const data = R.clone(sankeyData);
   // Normalize heights to range from 10 pixes to 100 pixels independent of the zoom
   const heightNormalizer = ({minValue, maxValue}, node) => {
     const normalized = scaleLinear()
       .domain([minValue, maxValue])
-      .range([10, 100])(reqStrPathThrowing('value', node))
-    if (!normalized.y1)
+      .range([10, 100])(reqStrPathThrowing('value', node));
+    if (!normalized) {
       throw new Error(`Failed to normalize y1 using minValue: ${minValue}, maxValue: ${maxValue} and node value: ${reqStrPathThrowing('value', node)}`);
+    }
     return normalized;
   };
 
   // Create a sankey generator
-  const sankeyGenerator = sankey()
+  const generator = sankey()
   // TODO pass from parent
     .nodeWidth(nodeWidth)
     .nodePadding(nodePadding)
     .geospatialPositioner(R.defaultTo(null, geospatialPositioner))
     .heightNormalizer(heightNormalizer)
     .extent([[1, 1], [width, height]]);
-
-  // Map sample nodes to sample features
-  /*
-  const features = R.zipWith((node, feature) =>
-      mergeDeep(
-        feature,
-        {
-          name: feature.properties.name || node.name,
-          properties: {
-            name: feature.properties.name || node.name
-          }
-        }
-      ),
-    data.nodes,
-    R.uniqBy(feature => feature.properties.name, BART_SAMPLE.features)
-  );*/
 
   // Call the generator with the features as nodes and the original links
   // This updates the links and nodes.
@@ -89,7 +77,7 @@ export const sankeyGenerator = memoized(v(({width, height, nodeWidth, nodePaddin
   // although there must be more to it since they have to attach to two nodes at different y positions
   // It also gives each headerLink an index
   const update = {links: data.links, nodes: data.nodes};
-  sankeyGenerator(update);
+  generator(update);
   return update;
 }, [
   ['_first', PropTypes.shape({
@@ -151,16 +139,17 @@ export const sankeyGeospatialTranslate = R.curry((opt, featureNode) => {
     // Project it to two x,y coordinates
     const bounds = projectBoundingBox(opt, boundingBox);
 
-    return {
-      // Provide various ways to render the node
-      pointData: {
-        feature: resolveSvgPoints(opt, feature),
-        bbox: resolveSvgPoints(opt, bboxPolygon(boundingBox)),
-        center: resolveSvgPoints(center(feature))
+    return R.merge({
+        // Provide various ways to render the node
+        pointData: {
+          feature: resolveSvgPoints(opt, feature),
+          bbox: resolveSvgPoints(opt, bboxPolygon(boundingBox)),
+          center: resolveSvgPoints(center(feature))
+        }
       },
       // x0, y0, x1, y1
-      ...bounds
-    };
+      bounds
+    );
   }
 );
 
@@ -239,23 +228,55 @@ export const makeLinkStages = stages => R.zipWith(
  * @param {Object} d The node to resolve the link stage of
  * @return {function(*)}
  */
-export const resolveLinkStage = R.curry((stageKey, d) => d.target[stageKey]);
+export const resolveLinkStage = (stageKey, d) => resolveNodeStage(
+  stageKey,
+  // Resolve the node
+  d.target
+);
 
 /**
  * Resolves the stage from the target of the node
- * @param {String} stageKey The stage name
+ * @param {String} stageKey The key indicating the stage name in the properties/propertyValues
  * @param {Object} d The node to resolve the link stage of
  * @return {function(*): *}
  */
-export const resolveNodeStage = R.curry((stageKey, d) => d => d[stageKey]);
+export const resolveNodeStage = (stageKey, d) => R.compose(
+  R.propOr('Unknown', stageKey),
+  d => propertyObj(d)
+)(d);
 
 /**
  * Resolve the node name of the given name
  * If the location of the node ahs been generalized add it to the name so users know
  * it isn't in an exact location.
- * TODO this is totally specific to Belgium. Update
- * @param {String} valueKey The node key to use for the name value
+ * @param {String} nodeNameKey The node key to use for the name value
+ * @param {String} valueKey The node key to use for the value of the node
+ * @param {Function} valueFormatter Formats the value to a string so it can have a type, currency, etc
  * @param {Object} d The node
+ * @param {Boolean} [d.isGeneralized] Optional boolean to indicate if the location of the node has been generalized
+ * because the exact location is not known
  * @return {string}
  */
-export const resolveNodeName = R.curry((valueKey, d) => `${d.siteName} ${d.isGeneralized ? ' (general location)' : ''}\n${d[valueKey]} t`);
+export const resolveNodeName = (nodeNameKey, valueKey, valueFormatter, d) => {
+  const obj = propertyObj(d);
+  // Get the node name or report an unknown site
+  const nodeName = R.propOr('Unknown site', nodeNameKey, obj);
+  const generalizedLabel = R.ifElse(d => R.propOr(false, 'isGeneralized', d), () => ' (general location)', () => '');
+  const valueLabel = reqStrPath(valueKey, obj).matchWith({
+    // Format the value with the valueFormatter
+    Ok: ({value}) => valueFormatter(value),
+    // Report Unknown value
+    Error: () => 'Unknown'
+  });
+  return `${nodeName}${generalizedLabel}\n${valueLabel}`
+};
+
+export const propertyObj = d => {
+  return R.compose(
+    R.fromPairs,
+    d => R.zip(
+      strPathOr([], 'properties', d),
+      strPathOr([], 'propertyValues', d)
+    )
+  )(d);
+};

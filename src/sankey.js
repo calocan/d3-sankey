@@ -95,49 +95,61 @@ export default function () {
   };
 
   sankey.nodeId = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (id = typeof _ === 'function' ? _ : constant(_), sankey) : id;
   };
 
   sankey.nodeAlign = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (align = typeof _ === 'function' ? _ : constant(_), sankey) : align;
   };
 
   sankey.nodeWidth = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (dx = +_, sankey) : dx;
   };
 
   sankey.nodePadding = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (py = +_, sankey) : py;
   };
 
   sankey.nodes = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (nodes = typeof _ === 'function' ? _ : constant(_), sankey) : nodes;
   };
 
   sankey.links = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (links = typeof _ === 'function' ? _ : constant(_), sankey) : links;
   };
 
   sankey.size = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (x0 = y0 = 0, x1 = +_[0], y1 = +_[1], sankey) : [x1 - x0, y1 - y0];
   };
 
   sankey.extent = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (x0 = +_[0][0], x1 = +_[1][0], y0 = +_[0][1], y1 = +_[1][1], sankey) : [[x0, y0], [x1, y1]];
   };
 
   sankey.iterations = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (iterations = +_, sankey) : iterations;
   };
 
   sankey.geospatialPositioner = function (_) {
+    // TODO rewrite this garbage code
     return arguments.length ? (geospatialPositioner = _, sankey) : geospatialPositioner;
   };
 
+  // TODO rewrite this garbage code
   sankey.heightNormalizer = function (_) {
     return arguments.length ? (heightNormalizer = _, sankey) : heightNormalizer;
   };
 
+  // TODO rewrite this garbage code
   sankey.widthtNormalizer = function (_) {
     return arguments.length ? (widthNormalizer = _, sankey) : widthNormalizer;
   };
@@ -146,13 +158,15 @@ export default function () {
   // Also, if the source and target are not objects, assume they are indices.
   function computeNodeLinks(graph) {
     graph.nodes.forEach(function (node, i) {
-      node.index = i;
+      // Only assign index if node doesn't already have an index
+      node.index = R.propOr(i, 'index', node);
       node.sourceLinks = [];
       node.targetLinks = [];
     });
     let nodeById = map(graph.nodes, id);
     graph.links.forEach(function (link, i) {
-      link.index = i;
+      // Only assign index if node doesn't already have an index
+      link.index = R.prop(i, 'index', link);
       let source = link.source, target = link.target;
       if (typeof source !== 'object') {
         source = link.source = find(nodeById, source);
@@ -232,6 +246,7 @@ export default function () {
       minValue = Math.min.apply(undefined, nodeValues),
       maxNodeValue = Math.max.apply(undefined, nodeValues);
     graph.nodes.forEach(function (node) {
+      // Add screen coordinates to the node
       Object.assign(node, {
         depth: 0, height: 0, x0: 0, y0: 0,
         x1: widthNormalizer ? widthNormalizer(node) : dx,
@@ -378,12 +393,20 @@ export default function () {
       node.targetLinks.sort(ascendingSourceBreadth);
     });
     graph.nodes.forEach(function (node) {
-      let y0 = node.y1 + node.y0 / 2, y1 = y0;
+      // Determine where the source and target links of this node are drawn on the node shape
+      // We only care about y because the node is a vertical rectangle. When we change the nodes
+      // to circles, as they ought to be on a map, we'll have to deal with the x and y of the links (I think)
+      // Set y0 to the middle y of the node
+      const y0 = (node.y1 + node.y0) / 2;
+      // Set y1 to y0, we could have target links come into a different spot on the node in the future
+      const y1 = y0;
+      // Iterate through the links of the node, setting the link's source y, y0 to that middle y of the node
+      // plus half the width of the link. The link with h
       node.sourceLinks.forEach(function (link) {
-        link.y0 = y0 + link.width / 2; // , y0 += link.width;
+        link.y0 = y0 + (link.width / 2); // , y0 += link.width; TODO we used to move the y so the links didn't overlap
       });
       node.targetLinks.forEach(function (link) {
-        link.y1 = y1 + link.width / 2; // , y1 += link.width;
+        link.y1 = y1 + (link.width / 2); // , y1 += link.width; TODO we used to move the y soe the links didn't overlap.
       });
     });
   }

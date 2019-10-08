@@ -12,11 +12,12 @@ const config = {
     'src/align.js',
     'src/constant.js',
     'src/sankey.js',
+    'src/sankeyHelpers.js',
     'src/sankeyLinkHorizontal.js'
   ],
   plugins: []
 };
-const externals = ['symbol-observable', 'folktale/concurrency/task', 'folktale/result/index', 'ramda-fantasy-validation'];
+const externals = [ '@turf/rhumb-bearing', '@turf/rhumb-distance', '@turf/bbox-polygon', '@turf/bbox', 'prop-types', 'symbol-observable', 'folktale/concurrency/task', 'folktale/result', 'folktale/maybe', 'ramda-fantasy-validation'];
 
 const configs = R.map(c => {
   const x = R.merge(config, c);
@@ -39,6 +40,7 @@ const configs = R.map(c => {
     plugins: R.concat(config.plugins, [
       commonjs({
         'node_modules/folktale/result/index.js': ['Result', 'Error', 'Ok'],
+        'node_modules/folktale/maybe/index.js': ['Just'],
         'node_modules/folktale/concurrency/task/index.js': ['task', 'rejected', 'of']
       }),
       babel()
@@ -50,19 +52,18 @@ const configs = R.map(c => {
       dir: 'esm',
       format: 'esm',
       indent: true,
-      sourcemap: true
+      sourcemap: false,
     },
     external: [
       ...externals,
       ...Object.keys(pkg.dependencies || {}),
       ...Object.keys(pkg.peerDependencies || {})
     ],
-    plugins: R.concat(config.plugins, [
-      nodeResolve({}), babel()
-    ])
+    plugins: R.concat(config.plugins, [])
   },
 
   // ES for Browsers
+  /*
   {
     output: {
       dir: 'esm',
@@ -92,5 +93,6 @@ const configs = R.map(c => {
       })
     ])
   }
+   */
 ]);
 export default configs;
