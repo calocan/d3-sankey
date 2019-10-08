@@ -165,8 +165,8 @@ export default function () {
     });
     let nodeById = map(graph.nodes, id);
     graph.links.forEach(function (link, i) {
-      // Only assign index if node doesn't already have an index
-      link.index = R.prop(i, 'index', link);
+      // Only assign indexes to lins
+      link.index = R.propOr(i, 'index', link);
       let source = link.source, target = link.target;
       if (typeof source !== 'object') {
         source = link.source = find(nodeById, source);
@@ -397,7 +397,7 @@ export default function () {
       // We only care about y because the node is a vertical rectangle. When we change the nodes
       // to circles, as they ought to be on a map, we'll have to deal with the x and y of the links (I think)
       // Set y0 to the middle y of the node
-      const y0 = (node.y1 + node.y0) / 2;
+      const y0 = node.y0 // (node.y1 + node.y0) / 2; TODO just start at the bottom of the node
       // Set y1 to y0, we could have target links come into a different spot on the node in the future
       const y1 = y0;
       // Iterate through the links of the node, setting the link's source y, y0 to that middle y of the node

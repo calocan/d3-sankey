@@ -114,8 +114,37 @@ export const unprojectNode = R.curry((opt, node) => {
   return R.merge(node, {x0, y0, x1, y1});
 });
 
+const aberrateIfNeeded = (graph, featureNode, feature) => {
+  // Aberrate the location if the node's position is generalized.
+  // This keeps node from all being on top of each other until we get a better visualization component some day
+  return R.when(
+    featureNode => R.propOr(false, 'isGeneralized', featureNode),
+    featureNode => {
+      // Make the distance 1km
+      const distance = 1;
+      // Multiply the index by the percent angle allocated to each node with the same coordinates
+      const coordinates = strPathOr([0, 0], 'geometry.coordinates', featureNode);
+      const direction = R.propOr(0, 'index', featureNode) * (360 /
+        R.compose(
+          R.length,
+          nodes => R.filter(
+            node => R.compose(
+              coord => R.equals(coordinates, coord),
+              node => strPathOr([0, 0], 'geometry.coordinates', node)
+            )(node),
+            nodes
+          ),
+          R.propOr([], 'nodes')
+        )(graph)
+      );
+      return transformTranslate(feature, distance, direction);
+    }
+  )(featureNode);
+};
+
 /**
  * Translates the given Sankey node to the position of its geometry.
+ * @param {Object} graph The full sankey graph used for context only
  * @param {Object} opt Mapbox projection object that contains the unproject function
  * @param {Object} featureNode The sankey node that is also a Feature (has geometry.coordinates)
  * @returns {Object} x0, y0, x1, y1 cooridinates to assign the node as well as an object pointData
@@ -125,10 +154,11 @@ export const unprojectNode = R.curry((opt, node) => {
  * of the geometry of the feature node.
  * pointData.center is the center point of the geometry of the featureNode
  */
-export const sankeyGeospatialTranslate = R.curry((opt, featureNode) => {
+export const sankeyGeospatialTranslate = R.curry((graph, opt, featureNode) => {
     const feature = R.compose(
+      feature => aberrateIfNeeded(graph, featureNode, feature),
       // Translate the feature to the center of the node's coordinates (because the node itself is a feature)
-      translateNodeFeature(R.__, featureNode),
+      f => translateNodeFeature(f, featureNode),
       // Next generate a feature from the lat/lon rectangle of the nodes
       nodeToFeature,
       // First unproject the node from pixels to lat/lon
@@ -138,6 +168,7 @@ export const sankeyGeospatialTranslate = R.curry((opt, featureNode) => {
     const boundingBox = bbox(feature);
     // Project it to two x,y coordinates
     const bounds = projectBoundingBox(opt, boundingBox);
+
 
     return R.merge({
         // Provide various ways to render the node
@@ -261,14 +292,17 @@ export const resolveNodeName = (nodeNameKey, valueKey, valueFormatter, d) => {
   const obj = propertyObj(d);
   // Get the node name or report an unknown site
   const nodeName = R.propOr('Unknown site', nodeNameKey, obj);
-  const generalizedLabel = R.ifElse(d => R.propOr(false, 'isGeneralized', d), () => ' (general location)', () => '');
+  const generalizedLabel = R.ifElse(
+    d => R.propOr(false, 'isGeneralized', d),
+    () => ' (general location)',
+    () => '')(d);
   const valueLabel = reqStrPath(valueKey, obj).matchWith({
     // Format the value with the valueFormatter
     Ok: ({value}) => valueFormatter(value),
     // Report Unknown value
     Error: () => 'Unknown'
   });
-  return `${nodeName}${generalizedLabel}\n${valueLabel}`
+  return `${nodeName}${generalizedLabel}\n${valueLabel}`;
 };
 
 export const propertyObj = d => {

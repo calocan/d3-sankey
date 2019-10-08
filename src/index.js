@@ -3,5 +3,6 @@ export {center as sankeyCenter, left as sankeyLeft, right as sankeyRight, justif
 export {default as sankeyLinkHorizontal} from './sankeyLinkHorizontal';
 export {
   nodeToFeature, projectBoundingBox, sankeyGenerator, sankeyGeospatialTranslate, translateNodeFeature,
-  unprojectNode, resolveNodeStage, resolveLinkStage, makeLinkStages, resolveNodeName
+  unprojectNode, resolveNodeStage, resolveLinkStage, makeLinkStages, resolveNodeName,
+  propertyObj
 } from './sankeyHelpers';
