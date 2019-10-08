@@ -1,6 +1,6 @@
 {
   "name": "rescape-geospatial-sankey",
-  "version": "0.7.43",
+  "version": "0.7.44",
   "description": "Visualize flow between nodes in a directed acyclic network on a Mapbox map",
   "keywords": [
     "d3",
@@ -39,6 +39,7 @@
     "publish-minor": "yarn version --minor && yarn publish --non-interactive"
   },
   "dependencies": {
+    "@turf/transform-translate": "^5.1.5",
     "d3-array": "2.2.0",
     "d3-collection": "1",
     "d3-scale": "^3.0.1",
