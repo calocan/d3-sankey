@@ -11,10 +11,4 @@
 
 // Makes localStorage available in node to Apollo
 import 'localstorage-polyfill';
-import {rescapeDefaultTransports} from 'rescape-log';
-import "core-js/stable";
-import "regenerator-runtime/runtime";
-// Set the loggers to debug level
-rescapeDefaultTransports.fileCombined.level = 'debug';
-rescapeDefaultTransports.console.level = 'debug';
 Error.stackTraceLimit = Infinity;

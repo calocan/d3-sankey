@@ -118,7 +118,7 @@ const aberrateIfNeeded = (graph, featureNode, feature) => {
   // Aberrate the location if the node's position is generalized.
   // This keeps node from all being on top of each other until we get a better visualization component some day
   return R.when(
-    featureNode => R.propOr(false, 'isGeneralized', featureNode),
+    () => R.propOr(false, 'isGeneralized', featureNode),
     featureNode => {
       // Make the distance 1km
       const distance = 1;
@@ -139,7 +139,7 @@ const aberrateIfNeeded = (graph, featureNode, feature) => {
       );
       return transformTranslate(feature, distance, direction);
     }
-  )(featureNode);
+  )(feature);
 };
 
 /**

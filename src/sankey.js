@@ -1,37 +1,11 @@
 import {ascending, min, sum} from 'd3-array';
 import {map, nest} from 'd3-collection';
-import {justify} from './align';
-import constant from './constant';
+import {ascendingBreadth, ascendingSourceBreadth, ascendingTargetBreadth, justify, value, nodeCenter, weightedSource, weightedTarget} from './sankeyHelpersAlign';
 import {scaleLinear} from 'd3-scale';
 import * as R from 'ramda';
 
-function ascendingSourceBreadth(a, b) {
-  return ascendingBreadth(a.source, b.source) || a.index - b.index;
-}
+const constant = x => () => R.identity(x);
 
-function ascendingTargetBreadth(a, b) {
-  return ascendingBreadth(a.target, b.target) || a.index - b.index;
-}
-
-function ascendingBreadth(a, b) {
-  return a.y0 - b.y0;
-}
-
-function value(d) {
-  return d.value;
-}
-
-function nodeCenter(node) {
-  return (node.y0 + node.y1) / 2;
-}
-
-function weightedSource(link) {
-  return nodeCenter(link.source) * link.value;
-}
-
-function weightedTarget(link) {
-  return nodeCenter(link.target) * link.value;
-}
 
 function defaultId(d) {
   return d.index;

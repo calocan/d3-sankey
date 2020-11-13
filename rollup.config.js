@@ -1,23 +1,18 @@
-import nodeResolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
-import replace from 'rollup-plugin-replace';
-import {terser} from 'rollup-plugin-terser';
 import commonjs from 'rollup-plugin-commonjs';
 import pkg from './package.json';
 import * as R from 'ramda';
 
 const config = {
   input: [
-    'src/index.js',
-    'src/align.js',
-    'src/constant.js',
+    'src/index.mjs',
     'src/sankey.js',
     'src/sankeyHelpers.js',
-    'src/sankeyLinkHorizontal.js'
+    'src/sankeyHelpersAlign.js'
   ],
   plugins: []
 };
-const externals = [ '@turf/rhumb-bearing', '@turf/rhumb-distance', '@turf/bbox-polygon', '@turf/bbox', 'prop-types', 'symbol-observable', 'folktale/concurrency/task', 'folktale/result', 'folktale/maybe', 'ramda-fantasy-validation'];
+const externals = ['@turf/rhumb-bearing', '@turf/rhumb-distance', '@turf/bbox-polygon', '@turf/bbox', 'prop-types', 'symbol-observable', 'folktale/concurrency/task', 'folktale/result', 'folktale/maybe', 'ramda-fantasy-validation'];
 
 const configs = R.map(c => {
   const x = R.merge(config, c);

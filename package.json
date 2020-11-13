@@ -8,18 +8,17 @@
     "sankey"
   ],
   "author": {
-    "name": "Mike Bostock, forked by Andy Likuski",
-    "url": "https://bost.ocks.org/mike/"
+    "name": "Andy Likuski, based on Mike Bostock's d3-sankey",
+    "url": "http:/rescapes.net"
   },
   "license": "BSD-3-Clause",
-  "main": "lib/index.js",
-  "module": "esm/index.js",
+  "main": "src/index.mjs",
+  "module": "src/index.mjs",
+  "type": "module",
   "files": [
     "lib",
-    "esm",
     "src"
   ],
-  "jsnext:main": "es/index.js",
   "homepage": "https://github.com/calocan/rescape-geospatial-sankey",
   "repository": {
     "type": "git",
@@ -28,11 +27,9 @@
   "scripts": {
     "clean": "rimraf lib dist es coverage",
     "lint": "eslint src",
-    "test": "cross-env jest",
-    "test:watch": "yarn test -- --watch",
-    "test:cov": "yarn test -- --coverage",
+    "test": "cross-env BABEL_ENV=commonjs jest",
     "build": "rollup -c",
-    "prepare": "yarn run install-peers -f && cross-env ENABLE_INTEGRATION_TESTS=false yarn run clean && yarn run build",
+    "prepare": "cross-env ENABLE_INTEGRATION_TESTS=false yarn run clean && yarn run build",
     "build-publish-patch": "yarn run build && yarn run publish-patch",
     "build-publish-minor": "yarn run build && yarn run publish-minor",
     "publish-patch": "yarn version --patch && yarn publish --non-interactive",
@@ -40,44 +37,36 @@
   },
   "dependencies": {
     "@turf/transform-translate": "^5.1.5",
-    "d3-array": "2.2.0",
+    "d3-array": "2.8.0",
     "d3-collection": "1",
     "d3-scale": "^3.0.1",
-    "d3-shape": "^1.2.0",
-    "ramda": "^0.26.1"
+    "d3-shape": "^2.0.0",
+    "ramda": "^0.27.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/node": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.6.0",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
-    "@types/jest": "^24.0.17",
-    "babel-eslint": "^10.0.2",
-    "babel-jest": "^24.9.0",
-    "babel-plugin-transform-es2015-modules-commonjs-simple": "^6.7.4",
+    "@types/jest": "^26.0.15",
     "babelrc-rollup": "^3.0.0",
-    "cross-env": "^5.2.0",
-    "eslint": "^6.1.0",
-    "eslint-loader": "^2.2.1",
-    "eslint-plugin-jest": "^22.15.1",
-    "install-peers-cli": "^2.1.1",
-    "jest": "^24.9.0",
+    "cross-env": "^7.0.2",
+    "eslint": "^7.13.0",
+    "eslint-loader": "^4.0.2",
+    "eslint-plugin-jest": "^24.1.3",
+    "jest": "^26.6.3",
+    "localstorage-polyfill": "^1.0.1",
     "package-preamble": "0.1.0",
-    "rollup": "^1.19.4",
+    "rescape-helpers": "^1.1.111",
+    "rescape-log": "^0.1.19",
+    "rescape-ramda": "^1.6.161",
+    "rollup": "^2.33.1",
     "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-commonjs": "10.0.2",
+    "rollup-plugin-commonjs": "10.1.0",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "1.4.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
-    "rollup-plugin-terser": "^5.1.1"
+    "rollup-plugin-terser": "^7.0.2"
   },
-  "peerDependencies": {
-    "rescape-helpers": ">=1.1.99",
-    "rescape-ramda": ">=1.5.78"
-  },
+  "peerDependencies": {},
   "jest": {
     "modulePaths": [
       "<rootDir>/src"
@@ -88,16 +77,13 @@
     "setupFilesAfterEnv": [
       "<rootDir>/config/jestsetup.js"
     ],
+    "testEnvironment": "jest-environment-node",
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/*.{js,jsx,mjs}",
       "<rootDir>/src/**/?(*.)(spec|test).{js,jsx,mjs}"
     ],
-    "testEnvironment": "node",
     "testURL": "http://localhost",
-    "transform": {
-      "^.+\\.(js|jsx|mjs)$": "<rootDir>/node_modules/babel-jest",
-      "^(?!.*\\.(js|jsx|mjs|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
-    },
+    "transform": {},
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs)$"
     ],
@@ -112,33 +98,5 @@
       "jsx",
       "node"
     ]
-  },
-  "babel": {
-    "sourceMaps": true,
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "useBuiltIns": "entry",
-          "corejs": "3x"
-        }
-      ]
-    ],
-    "env": {
-      "test": {
-        "plugins": [
-          "@babel/plugin-transform-runtime",
-          [
-            "transform-es2015-modules-commonjs-simple",
-            {
-              "noMangle": true
-            }
-          ]
-        ]
-      }
-    }
-  },
-  "eslintConfig": {
-    "parser": "babel-eslint"
   }
 }
