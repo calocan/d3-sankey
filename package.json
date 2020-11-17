@@ -1,6 +1,6 @@
 {
-  "name": "rescape-geospatial-sankey",
-  "version": "0.7.57",
+  "name": "@rescapes/geospatial-sankey",
+  "version": "0.7.58",
   "description": "Visualize flow between nodes in a directed acyclic network on a Mapbox map",
   "keywords": [
     "d3",
@@ -19,10 +19,10 @@
     "lib",
     "src"
   ],
-  "homepage": "https://github.com/calocan/rescape-geospatial-sankey",
+  "homepage": "https://github.com/calocan/rescapes/geospatial-sankey",
   "repository": {
     "type": "git",
-    "url": "https://github.com/calocan/rescape-geospatial-sankey"
+    "url": "https://github.com/calocan/rescape/geospatial-sankey"
   },
   "scripts": {
     "clean": "rimraf lib dist es coverage",
