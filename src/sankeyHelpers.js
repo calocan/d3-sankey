@@ -10,7 +10,7 @@
  */
 
 import * as R from 'ramda';
-import {resolveFeatureFromExtent, resolveSvgPoints} from 'rescape-helpers';
+import {resolveFeatureFromExtent, resolveSvgPoints} from '@rescapes/helpers';
 import bbox from '@turf/bbox';
 import bboxPolygon from '@turf/bbox-polygon';
 import center from '@turf/center';
@@ -18,8 +18,8 @@ import rhumbDistance from '@turf/rhumb-distance';
 import rhumbBearing from '@turf/rhumb-bearing';
 import transformTranslate from '@turf/transform-translate';
 import {scaleLinear} from 'd3-scale';
-import {reqStrPathThrowing, memoized, strPathOr, reqStrPath} from 'rescape-ramda';
-import {v} from 'rescape-validate';
+import {reqStrPathThrowing, memoized, strPathOr, reqStrPath} from '@rescapes/ramda';
+import {v} from '@rescapes/validate';
 import PropTypes from 'prop-types';
 import sankey from './sankey';
 
