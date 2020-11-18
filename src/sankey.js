@@ -1,6 +1,6 @@
 import {ascending, min, sum} from 'd3-array';
 import {map, nest} from 'd3-collection';
-import {ascendingBreadth, ascendingSourceBreadth, ascendingTargetBreadth, justify, value, nodeCenter, weightedSource, weightedTarget} from './sankeyHelpersAlign';
+import {ascendingBreadth, ascendingSourceBreadth, ascendingTargetBreadth, justify, value, nodeCenter, weightedSource, weightedTarget} from './sankeyHelpersAlign.js';
 import {scaleLinear} from 'd3-scale';
 import * as R from 'ramda';
 

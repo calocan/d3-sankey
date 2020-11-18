@@ -21,7 +21,7 @@ import {scaleLinear} from 'd3-scale';
 import {reqStrPathThrowing, memoized, strPathOr, reqStrPath} from '@rescapes/ramda';
 import {v} from '@rescapes/validate';
 import PropTypes from 'prop-types';
-import sankey from './sankey';
+import sankey from './sankey.js';
 
 /**
  * This needs to be debugged

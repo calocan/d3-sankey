@@ -1,4 +1,4 @@
-import generateSankey from '../src/sankey';
+import generateSankey from '../src/sankey.js';
 import energySample from './samples/energy.json';
 import energyNodes from './samples/energy-nodes.json';
 import energyLinks from './samples/energy-links.json';
